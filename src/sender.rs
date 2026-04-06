@@ -66,6 +66,12 @@ impl Sender {
     }
 
     /// Send a notification email about a new message in a service mailbox.
+    //
+    // Eight scalar arguments mirror the notification template's required
+    // substitution slots; building a struct here would just shuffle the
+    // same data around without simplifying the call sites. Allow the
+    // lint locally rather than introducing an indirection.
+    #[allow(clippy::too_many_arguments)]
     pub fn send_notification(
         &self,
         from_identity: &str,

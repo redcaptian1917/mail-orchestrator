@@ -24,6 +24,13 @@ impl Database {
     }
 
     /// Log an email event.
+    //
+    // Eight parameters reflects the underlying audit-log row schema 1:1.
+    // Wrapping these in a builder struct would just shuffle the same
+    // fields around without removing complexity, so we accept the
+    // too-many-arguments lint here. Reconsider if the audit schema
+    // grows fields that don't always have a value at log time.
+    #[allow(clippy::too_many_arguments)]
     pub fn log_email(
         &self,
         message_id: &str,
@@ -83,6 +90,11 @@ impl Database {
     }
 
     /// Insert a scheduled email.
+    //
+    // Mirrors the `scheduled_emails` table columns 1:1; same rationale as
+    // `log_email` above — a builder struct would not actually reduce the
+    // surface area, only relocate it. Allow the lint locally.
+    #[allow(clippy::too_many_arguments)]
     pub fn insert_scheduled(
         &self,
         tracking_id: &str,
@@ -157,6 +169,12 @@ impl Database {
 }
 
 /// A scheduled email record from the database.
+//
+// `template`, `template_vars`, and `scheduled_at` are populated by
+// `get_due_scheduled` for the scheduler loop's future render-and-send
+// stage; that consumer hasn't been wired into main yet. Once the
+// scheduler reads them, drop the allow.
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct ScheduledEmail {
     pub id: i64,

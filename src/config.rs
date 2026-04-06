@@ -8,6 +8,12 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 /// Top-level orchestrator configuration.
+//
+// `templates` is held on the `Config` struct so the future template engine
+// can take it by reference once wired in. Until then clippy can't see a
+// consumer, so dead-code is suppressed at the struct level. Drop the
+// allow once the template module reads `cfg.templates.dir`.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct Config {
     pub daemon: DaemonConfig,
@@ -30,6 +36,12 @@ pub struct DaemonConfig {
 }
 
 /// Mail domain and server settings.
+//
+// `mail_base` is the parent directory under which all per-mailbox
+// Maildirs live; the future Maildir-bootstrap routine will use it to
+// validate that mailboxes resolve under a single root, but that boot
+// step isn't wired in yet. Drop the allow once it is.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct DomainConfig {
     pub name: String,
@@ -41,6 +53,11 @@ pub struct DomainConfig {
 }
 
 /// Router mailbox configuration.
+//
+// `mailbox` is the human-readable mailbox name (e.g. "router") used by
+// the audit logger to attribute events; the audit-write site that reads
+// it isn't online yet, so suppress dead-code until then.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct RouterConfig {
     pub mailbox: String,
@@ -50,6 +67,11 @@ pub struct RouterConfig {
 }
 
 /// Template engine configuration.
+//
+// `dir` is read by the template loader at runtime via serde — clippy's
+// dead-code analysis can't see across the deserialization boundary, hence
+// the allow. Remove once the template loader is wired into main.rs.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct TemplateConfig {
     pub dir: PathBuf,
@@ -68,6 +90,13 @@ pub struct NotifyConfig {
 }
 
 /// Scheduled email definition.
+//
+// All fields are populated by serde from the user's TOML config and consumed
+// by the scheduler loop, but the scheduler entry-point isn't wired into the
+// daemon main yet — clippy can't see the future consumer, so dead-code is
+// suppressed at the struct level. Drop the allow once `scheduler::run()`
+// references these fields directly.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Deserialize)]
 pub struct ScheduleConfig {
     pub name: String,
@@ -92,6 +121,11 @@ impl Config {
     }
 
     /// Get all Maildir paths that should be watched (router + all notify mailboxes).
+    //
+    // Will be invoked by the watcher boot path once it's promoted from a
+    // standalone binary to a sub-task of the orchestrator main loop. Until
+    // then it's referenced only by the `tests` module below.
+    #[allow(dead_code)]
     pub fn watch_paths(&self) -> Vec<(String, PathBuf)> {
         let mut paths = vec![("router".to_string(), self.router.maildir.clone())];
         for (name, notify) in &self.notify {

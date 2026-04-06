@@ -8,6 +8,13 @@ use mail_parser::{MessageParser, MimeHeaders};
 use std::path::Path;
 
 /// Parsed email with extracted fields.
+//
+// `date`, `has_attachments`, `attachment_names`, and `raw_path` are
+// populated by the parser today and will be consumed by the audit-logger
+// and notification-formatter once those are wired in. Suppress the
+// dead-code lint at the struct level rather than dropping the fields —
+// re-introducing them later means re-parsing every email file.
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct ParsedEmail {
     pub message_id: String,
